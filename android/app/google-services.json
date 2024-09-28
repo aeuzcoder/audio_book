@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "549653513805",
+    "project_id": "book-app-dcfc5",
+    "storage_bucket": "book-app-dcfc5.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:549653513805:android:c735e9812aed78c9493e04",
+        "android_client_info": {
+          "package_name": "com.example.audio_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBgIRs7i27AY2yd4vNsPS765kjfzH0vSuY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

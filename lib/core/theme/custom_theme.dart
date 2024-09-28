@@ -1,4 +1,4 @@
-import 'package:audio_app/data/colors.dart';
+import 'package:audio_app/core/theme/colors.dart';
 import 'package:flutter/material.dart';
 
 // Define a custom theme
@@ -42,7 +42,7 @@ ThemeData customTheme() {
       ),
     ),
 
-    // Button styling
+    // Button style
     buttonTheme: const ButtonThemeData(
       buttonColor: widgetColor, // Button color
       textTheme: ButtonTextTheme.primary, // Text color on buttons

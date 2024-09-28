@@ -1,6 +1,7 @@
 import 'dart:developer';
 
-import 'package:audio_app/data/colors.dart';
+import 'package:audio_app/core/theme/colors.dart';
+import 'package:audio_app/presentation/checking_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -160,11 +161,19 @@ class _AuthPageState extends State<AuthPage> {
                   child: ElevatedButton(
                     style:
                         ElevatedButton.styleFrom(backgroundColor: widgetColor),
-                    onPressed: () {
+                    onPressed: () async {
                       if (_formKey.currentState != null &&
                           _formKey.currentState!.validate()) {
                         log('if');
-                        signUp();
+                        await signUp();
+                        if (mounted &&
+                            FirebaseAuth.instance.currentUser != null) {
+                          Navigator.of(context).pushReplacement(
+                            MaterialPageRoute(
+                              builder: (context) => const CheckingScreen(),
+                            ),
+                          );
+                        }
                       } else {
                         null;
                       }

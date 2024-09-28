@@ -1,4 +1,4 @@
-import 'package:audio_app/presentation/bloc/user_bloc.dart';
+import 'package:audio_app/domain/bloc/user_bloc.dart';
 import 'package:audio_app/presentation/pages/auth_page/auth_page.dart';
 import 'package:audio_app/presentation/pages/offline_page/ui/offline_page.dart';
 import 'package:audio_app/presentation/pages/online_page/ui/online_page.dart';
@@ -10,45 +10,32 @@ class CheckingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<UserBloc, UserState>(
-      listener: (context, state) {
-        //Opens when the app opens
-        if (state is UserStartState) {}
-
+    return BlocBuilder<UserBloc, UserState>(
+      builder: (context, state) {
         //Opens when user didn't authentificate
         if (state is UserAuthState) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const AuthPage(),
-            ),
-          );
+          return const AuthPage();
+        }
+
+        //Opens when user is offline
+        else if (state is UserOfflineState) {
+          return const OfflinePage();
+        }
+
+        //Opens when user is online
+        else if (state is UserLoadedState) {
+          return const OnlinePage();
         }
 
         //Opens when data is loading
-        if (state is UserLoadingState) {}
-
-        //Opens when user is offline
-
-        if (state is UserOfflineState) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const OfflinePage(),
-            ),
-          );
-        }
-        //Opens when user is online
-        if (state is UserOnlineState) {
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const OnlinePage(),
+        else {
+          return const Scaffold(
+            body: Center(
+              child: CircularProgressIndicator(),
             ),
           );
         }
       },
-      child: const Scaffold(),
     );
   }
 }

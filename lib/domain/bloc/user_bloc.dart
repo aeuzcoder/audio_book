@@ -4,6 +4,7 @@ import 'package:audio_app/data/models/book.dart';
 import 'package:audio_app/domain/repository/bloc_repo.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 part 'user_event.dart';
@@ -66,6 +67,8 @@ class UserBloc extends Bloc<UserEvent, UserState> {
         // Fetch books data from the repository
         List<Book> books = await _fetchBooks();
 
+        // Get url
+
         // Emit loaded state with the fetched books
         emit(UserLoadedState(books: books));
       } catch (e) {
@@ -87,7 +90,34 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     // Fetch the data for each book using the list of IDs
     List<Map<String, dynamic>> booksData = await blocRepo.getBooksData(booksId);
 
+    //changing url of all private url to public
+    for (var book in booksData) {
+      book['image'] = await getPublicUrl(book['image']);
+      //log('IMAGE' '  ${book['image']}');
+
+      book['tutorial'] = await getPublicUrl(book['tutorial']);
+      //log('TUTORIAL' '  ${book['tutorial']}');
+
+      List<dynamic> chapters = List<dynamic>.from(book['chapters']);
+      book['chapters'] =
+          await Future.wait(chapters.map((chapter) => getPublicUrl(chapter)));
+    }
     // Map the fetched data to the Book model and return the list
     return booksData.map((book) => Book.fromMap(book)).toList();
+  }
+
+  //Changing private url to public
+  Future<String> getPublicUrl(String gsUrl) async {
+    try {
+      // create public url to firebase
+      final ref = FirebaseStorage.instance.refFromURL(gsUrl);
+      String publicUrl = await ref.getDownloadURL();
+
+      return publicUrl;
+    } catch (e) {
+      // If data is not url
+      log('Error fetching public URL: $e');
+      return '';
+    }
   }
 }

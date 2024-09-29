@@ -1,29 +1,50 @@
 import 'dart:developer';
 
 import 'package:audio_app/core/theme/colors.dart';
-import 'package:audio_app/presentation/checking_screen.dart';
+import 'package:audio_app/domain/bloc/user_bloc.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
-class AuthPage extends StatefulWidget {
-  const AuthPage({super.key});
+class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
 
   @override
-  State<AuthPage> createState() => _AuthPageState();
+  State<LoginPage> createState() => _LoginPageState();
 }
 
-class _AuthPageState extends State<AuthPage> {
+class _LoginPageState extends State<LoginPage> {
+  bool registerNow = false;
+  bool isLoading = false;
+  String textOfLogin = 'Login to continue';
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  Future<void> signUp() async {
+  //LOGIN TEXT
+
+  //FOR CHECKING
+  Future<void> signIn() async {
     try {
-      await FirebaseAuth.instance.createUserWithEmailAndPassword(
-          email: _emailController.text, password: _passwordController.text);
-      log('USER CREATED');
+      setState(() {
+        isLoading = true;
+      });
+      if (registerNow) {
+        log('Create ');
+        await FirebaseAuth.instance.createUserWithEmailAndPassword(
+            email: _emailController.text, password: _passwordController.text);
+      } else {
+        log('Login ');
+        await FirebaseAuth.instance.signInWithEmailAndPassword(
+            email: _emailController.text, password: _passwordController.text);
+      }
+      log('USER FOUND');
     } catch (e) {
       log(e.toString());
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
@@ -48,9 +69,7 @@ class _AuthPageState extends State<AuthPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              /* 
-                L O G O
-              */
+              // LOGO
               SizedBox(
                 width: 144,
                 height: 144,
@@ -60,34 +79,38 @@ class _AuthPageState extends State<AuthPage> {
                 ),
               ),
 
-              //CREATE ACCOUNT
+              // SIGN IN
               Padding(
                 padding: const EdgeInsets.symmetric(vertical: 10.0),
                 child: Text(
-                  'Create account',
+                  registerNow ? 'Create account' : 'Sign in',
                   style: Theme.of(context).textTheme.displayLarge,
                 ),
               ),
 
-              //REGISTER TO CONTINUE
+              // LOGIN TO CONTINUE
               Padding(
                 padding: const EdgeInsets.only(bottom: 10.0),
                 child: Text(
-                  'Register to continue',
+                  textOfLogin,
                   style: Theme.of(context).textTheme.bodyLarge!.copyWith(
-                        color: fontColor.withOpacity(0.8),
+                        color: textOfLogin.substring(0, 1) == 'T'
+                            ? widgetColor
+                            : fontColor.withOpacity(0.8),
                       ),
                 ),
               ),
-              /*
-                TEXT FORM FIELD
-              */
-              //EMAIL
+
+              // EMAIL
               TextFormField(
                 controller: _emailController,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'This field is required';
+                    return 'Email is required';
+                  } else if (!RegExp(
+                          r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
+                      .hasMatch(value)) {
+                    return 'Invalid email format';
                   }
                   return null;
                 },
@@ -96,7 +119,7 @@ class _AuthPageState extends State<AuthPage> {
                     .bodyLarge!
                     .copyWith(fontWeight: FontWeight.w300),
                 decoration: InputDecoration(
-                  hintText: 'Login',
+                  hintText: 'Email',
                   hintStyle: Theme.of(context).textTheme.bodyMedium!.copyWith(
                         fontSize: 20,
                         color: fontColor.withOpacity(0.6),
@@ -111,17 +134,16 @@ class _AuthPageState extends State<AuthPage> {
                 ),
               ),
 
-              //SIZED BOX
-              const SizedBox(
-                height: 20,
-              ),
+              const SizedBox(height: 20),
 
-              //PASSWORD
+              // PASSWORD
               TextFormField(
                 controller: _passwordController,
                 validator: (value) {
                   if (value == null || value.isEmpty) {
-                    return 'This field is required';
+                    return 'Password is required';
+                  } else if (value.isNotEmpty && value.length < 6) {
+                    return 'Min 6 character';
                   }
                   return null;
                 },
@@ -145,15 +167,33 @@ class _AuthPageState extends State<AuthPage> {
                 ),
               ),
 
-              //SIZED BOX
+              //REGISTER NOW
+              Align(
+                alignment: Alignment.topRight,
+                child: TextButton(
+                  onPressed: () {
+                    setState(() {
+                      registerNow = !registerNow;
+                      textOfLogin = 'Register now';
+                    });
+                  },
+                  child: Text(
+                    registerNow ? 'Sign in' : 'Register now',
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodyMedium!
+                        .copyWith(color: Colors.blue),
+                  ),
+                ),
+              ),
               const SizedBox(
-                height: 52,
+                height: 24,
               ),
 
-              //REGISTER BUTTON
+              // BUTTON
               Center(
                 child: Container(
-                  width: size.width / 1.8,
+                  width: isLoading ? size.width / 3 : size.width / 1.8,
                   height: 48,
                   decoration: BoxDecoration(
                       color: widgetColor,
@@ -161,35 +201,51 @@ class _AuthPageState extends State<AuthPage> {
                   child: ElevatedButton(
                     style:
                         ElevatedButton.styleFrom(backgroundColor: widgetColor),
+
+                    //ON PRESSED
                     onPressed: () async {
                       if (_formKey.currentState != null &&
                           _formKey.currentState!.validate()) {
-                        log('if');
-                        await signUp();
-                        if (mounted &&
+                        await signIn();
+
+                        if (context.mounted &&
                             FirebaseAuth.instance.currentUser != null) {
-                          Navigator.of(context).pushReplacement(
-                            MaterialPageRoute(
-                              builder: (context) => const CheckingScreen(),
-                            ),
+                          context
+                              .read<UserBloc>()
+                              .add(UserAuthenticatedEvent());
+                        } else if (FirebaseAuth.instance.currentUser != null &&
+                            !registerNow) {
+                          setState(
+                            () {
+                              textOfLogin = 'There is no such user';
+                            },
                           );
                         }
-                      } else {
-                        null;
                       }
                     },
-                    child: Text(
-                      'REGISTER',
-                      style: Theme.of(context)
-                          .textTheme
-                          .bodyLarge!
-                          .copyWith(fontSize: 20, fontWeight: FontWeight.w500),
-                    ),
+
+                    //
+                    child: isLoading
+                        ? const SizedBox(
+                            width: 24,
+                            height: 24,
+                            child: Center(
+                                child: CircularProgressIndicator(
+                              color: bgColor,
+                              strokeWidth: 2,
+                            )),
+                          )
+                        : Text(
+                            registerNow ? 'REGISTER' : 'LOGIN',
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyLarge!
+                                .copyWith(
+                                    fontSize: 20, fontWeight: FontWeight.w500),
+                          ),
                   ),
                 ),
-              )
-
-              //
+              ),
             ],
           ),
         ),

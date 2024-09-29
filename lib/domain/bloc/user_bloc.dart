@@ -10,51 +10,84 @@ part 'user_event.dart';
 part 'user_state.dart';
 
 class UserBloc extends Bloc<UserEvent, UserState> {
+  // Initialize the repository for fetching data
+  final BlocRepo blocRepo = BlocRepo();
+
+  // BLoC constructor: Register event handlers for user authentication
   UserBloc() : super(UserStartState()) {
-    on<UserAuthEvent>(
-      (event, emit) async {
-        final BlocRepo blocRepo = BlocRepo();
-        final connectivity = await (Connectivity().checkConnectivity());
+    // Handle event when user is authenticated
+    on<UserAuthenticatedEvent>(_onUserAuthenticated);
 
-        //CHECK THE INTERNET CONNECTION
-        if (connectivity.contains(ConnectivityResult.none)) {
-          //USER IS OFFLINE
-          emit(UserOfflineState());
-        } else {
-          //USER ONLINE
-          emit(UserOnlineState());
+    // Handle event for checking user authentication and internet connectivity
+    on<UserAuthEvent>(_onUserAuth);
+  }
 
-          final user = FirebaseAuth.instance.currentUser;
-          if (user != null) {
-            //USER AUTHENTIFICATED
-            try {
-              //LOADING DATA
-              emit(UserLoadingState());
+  // Event handler for when the user is already authenticated
+  Future<void> _onUserAuthenticated(
+      UserAuthenticatedEvent event, Emitter<UserState> emit) async {
+    try {
+      // Emit loading state while data is being fetched
+      emit(UserLoadingState());
 
-              //get books id from database for fetching all books data
-              List<String> booksId = await blocRepo.getBooksId;
+      // Fetch book data from the repository
+      List<Book> books = await _fetchBooks();
 
-              //fetch all books data like json
-              List<Map<String, dynamic>> booksData =
-                  await blocRepo.getBooksData(booksId);
+      // Emit loaded state with the fetched books
+      emit(UserLoadedState(books: books));
+    } catch (e) {
+      // Emit error state if something goes wrong and log the error
+      emit(UserErrorState());
+      log('ERROR: $e');
+    }
+  }
 
-              //fetch all books data like class Book
-              List<Book> books =
-                  booksData.map((book) => Book.fromMap(book)).toList();
+  // Event handler for checking user authentication and internet connection
+  Future<void> _onUserAuth(UserAuthEvent event, Emitter<UserState> emit) async {
+    // Check the current internet connectivity status
+    final connectivity = await Connectivity().checkConnectivity();
 
-              //LOADED ALL DATA FROM DATABASE
-              emit(UserLoadedState(books: books));
-            } catch (e) {
-              //ERROR WHEN LOADING DATA FROM DATABASE
-              emit(UserErrorState());
-              log('ERROR: $e');
-            }
-          } else {
-            //USER DIDN'T AUTHENTIFICATE
-            emit(UserAuthState());
-          }
-        }
-      },
-    );
+    // If there is no internet connection, emit the offline state
+    if (connectivity.contains(ConnectivityResult.none)) {
+      emit(UserOfflineState());
+      return; // Stop further execution if offline
+    }
+
+    // If internet is available, emit online state
+    emit(UserOnlineState());
+
+    // Check if the user is authenticated with Firebase
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      // User is authenticated, fetch their data
+      try {
+        // Emit loading state while fetching data
+        emit(UserLoadingState());
+
+        // Fetch books data from the repository
+        List<Book> books = await _fetchBooks();
+
+        // Emit loaded state with the fetched books
+        emit(UserLoadedState(books: books));
+      } catch (e) {
+        // Emit error state if something goes wrong and log the error
+        emit(UserErrorState());
+        log('ERROR: $e');
+      }
+    } else {
+      // If user is not authenticated, emit the authentication state
+      emit(UserAuthState());
+    }
+  }
+
+  // Helper method to fetch book data from the repository
+  Future<List<Book>> _fetchBooks() async {
+    // Get a list of book IDs from the repository
+    List<String> booksId = await blocRepo.getBooksId;
+
+    // Fetch the data for each book using the list of IDs
+    List<Map<String, dynamic>> booksData = await blocRepo.getBooksData(booksId);
+
+    // Map the fetched data to the Book model and return the list
+    return booksData.map((book) => Book.fromMap(book)).toList();
   }
 }

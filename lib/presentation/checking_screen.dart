@@ -1,5 +1,6 @@
+import 'package:audio_app/core/theme/colors.dart';
 import 'package:audio_app/domain/bloc/user_bloc.dart';
-import 'package:audio_app/presentation/pages/auth_page/auth_page.dart';
+import 'package:audio_app/presentation/pages/login_page/login_page.dart';
 import 'package:audio_app/presentation/pages/offline_page/ui/offline_page.dart';
 import 'package:audio_app/presentation/pages/online_page/ui/online_page.dart';
 import 'package:flutter/material.dart';
@@ -14,7 +15,7 @@ class CheckingScreen extends StatelessWidget {
       builder: (context, state) {
         //Opens when user didn't authentificate
         if (state is UserAuthState) {
-          return const AuthPage();
+          return const LoginPage();
         }
 
         //Opens when user is offline
@@ -31,7 +32,10 @@ class CheckingScreen extends StatelessWidget {
         else {
           return const Scaffold(
             body: Center(
-              child: CircularProgressIndicator(),
+              child: CircularProgressIndicator(
+                color: widgetColor,
+                strokeWidth: 3,
+              ),
             ),
           );
         }

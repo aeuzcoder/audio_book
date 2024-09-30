@@ -1,13 +1,15 @@
 import 'package:audio_app/core/theme/colors.dart';
+import 'package:audio_app/core/widgets/custom_app_bar.dart';
+import 'package:audio_app/data/models/book.dart';
+import 'package:audio_app/presentation/pages/online_page/ui/player_page.dart';
 import 'package:audio_app/presentation/pages/online_page/widgets/bottom_widget.dart';
 import 'package:audio_app/presentation/pages/online_page/widgets/center_widget.dart';
 import 'package:audio_app/presentation/pages/online_page/widgets/top_widget.dart';
-import 'package:audio_app/domain/bloc/user_bloc.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
 class OnlinePage extends StatefulWidget {
-  const OnlinePage({super.key});
+  const OnlinePage({super.key, required this.books});
+  final List<Book> books;
 
   @override
   State<OnlinePage> createState() => _OnlinePageState();
@@ -15,6 +17,7 @@ class OnlinePage extends StatefulWidget {
 
 class _OnlinePageState extends State<OnlinePage> {
   int index = 0;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -23,7 +26,15 @@ class _OnlinePageState extends State<OnlinePage> {
       floatingActionButton: FloatingActionButton(
         backgroundColor: widgetColor,
         foregroundColor: fontColor,
-        onPressed: () {},
+        onPressed: () {
+          Navigator.push(context, MaterialPageRoute(
+            builder: (context) {
+              return PlayerPage(
+                books: widget.books,
+              );
+            },
+          ));
+        },
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
         child: const Icon(
           Icons.play_arrow,
@@ -74,50 +85,29 @@ class _OnlinePageState extends State<OnlinePage> {
           ),
         ),
       ),
-      appBar: AppBar(
-        centerTitle: true,
-        backgroundColor: Colors.transparent,
-        foregroundColor: fontColor,
-        actions: const [
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 8.0),
-            child: Icon(
-              Icons.more_vert,
-              size: 32,
-            ),
-          )
-        ],
-        title: Text(
-          'Explore',
-          style: Theme.of(context)
-              .textTheme
-              .bodyLarge!
-              .copyWith(color: widgetColor),
-        ),
+
+      //APP BAR
+      appBar: const CustomAppBar(
+        title: 'Explore',
+        colorTitle: widgetColor,
+        colorBg: Colors.transparent,
+        colorFg: fontColor,
       ),
 
       //      BODY
-      body: BlocBuilder<UserBloc, UserState>(
-        builder: (context, state) {
-          if (state is UserLoadedState) {
-            final books = state.books;
-            return Padding(
-              //ALL SCREEN PADDING
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: SingleChildScrollView(
-                child: Column(
-                  //WIDGETS
-                  children: [
-                    TopWidget(books: books),
-                    CenterWidget(),
-                    BottomWidget(books: books),
-                  ],
-                ),
-              ),
-            );
-          }
-          return const SizedBox();
-        },
+      body: Padding(
+        //ALL SCREEN PADDING
+        padding: const EdgeInsets.symmetric(horizontal: 16.0),
+        child: SingleChildScrollView(
+          child: Column(
+            //WIDGETS
+            children: [
+              TopWidget(books: widget.books),
+              CenterWidget(),
+              BottomWidget(books: widget.books),
+            ],
+          ),
+        ),
       ),
     );
   }

@@ -17,14 +17,16 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: customTheme(),
-      debugShowCheckedModeBanner: false,
-      home: MultiBlocProvider(providers: [
-        BlocProvider(
-          create: (context) => UserBloc()..add(UserAuthEvent()),
-        )
-      ], child: const CheckingScreen()),
-    );
+    return MultiBlocProvider(
+        providers: [
+          BlocProvider(
+            create: (context) => UserBloc()..add(UserAuthEvent()),
+          ),
+        ],
+        child: MaterialApp(
+          debugShowCheckedModeBanner: false,
+          theme: customTheme(),
+          home: const CheckingScreen(),
+        ));
   }
 }

@@ -1,5 +1,6 @@
 import 'package:audio_app/core/theme/colors.dart';
 import 'package:audio_app/data/models/book.dart';
+import 'package:audio_app/presentation/pages/online_page/ui/player_page.dart';
 import 'package:flutter/material.dart';
 
 class BottomWidget extends StatelessWidget {
@@ -44,42 +45,51 @@ class BottomWidget extends StatelessWidget {
                 final book = books[index];
 
                 //CONTAINER IMAGE
-                return Container(
-                  height: 172,
-                  width: 120,
-                  decoration: BoxDecoration(
+                return GestureDetector(
+                  onTap: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => PlayerPage(books: books),
+                        ));
+                  },
+                  child: Container(
+                    height: 172,
+                    width: 120,
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8),
+                        boxShadow: [
+                          BoxShadow(
+                              color: widgetColor.withOpacity(0.3),
+                              offset: const Offset(3, 1),
+                              blurRadius: 2,
+                              blurStyle: BlurStyle.normal)
+                        ]),
+                    child: ClipRRect(
                       borderRadius: BorderRadius.circular(8),
-                      boxShadow: [
-                        BoxShadow(
-                            color: widgetColor.withOpacity(0.3),
-                            offset: const Offset(3, 1),
-                            blurRadius: 2,
-                            blurStyle: BlurStyle.normal)
-                      ]),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(8),
-                    child: Image.network(
-                      book.image,
-                      fit: BoxFit
-                          .cover, // Устанавливает, как изображение будет масштабироваться
-                      loadingBuilder: (BuildContext context, Widget child,
-                          ImageChunkEvent? loadingProgress) {
-                        if (loadingProgress == null) return child;
-                        return Center(
-                          child: CircularProgressIndicator(
-                            strokeWidth: 3,
-                            color: widgetColor,
-                            value: loadingProgress.expectedTotalBytes != null
-                                ? loadingProgress.cumulativeBytesLoaded /
-                                    (loadingProgress.expectedTotalBytes ?? 1)
-                                : null,
-                          ),
-                        );
-                      },
-                      errorBuilder: (BuildContext context, Object error,
-                          StackTrace? stackTrace) {
-                        return const Center(child: Text('Error'));
-                      },
+                      child: Image.network(
+                        book.image,
+                        fit: BoxFit
+                            .cover, // Устанавливает, как изображение будет масштабироваться
+                        loadingBuilder: (BuildContext context, Widget child,
+                            ImageChunkEvent? loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return Center(
+                            child: CircularProgressIndicator(
+                              strokeWidth: 3,
+                              color: widgetColor,
+                              value: loadingProgress.expectedTotalBytes != null
+                                  ? loadingProgress.cumulativeBytesLoaded /
+                                      (loadingProgress.expectedTotalBytes ?? 1)
+                                  : null,
+                            ),
+                          );
+                        },
+                        errorBuilder: (BuildContext context, Object error,
+                            StackTrace? stackTrace) {
+                          return const Center(child: Text('Error'));
+                        },
+                      ),
                     ),
                   ),
                 );

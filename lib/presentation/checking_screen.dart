@@ -25,7 +25,15 @@ class CheckingScreen extends StatelessWidget {
 
         //Opens when user is online
         else if (state is UserLoadedState) {
-          return const OnlinePage();
+          final books = state.books;
+          return OnlinePage(books: books);
+        }
+        if (state is UserErrorState) {
+          return const Scaffold(
+            body: Center(
+              child: Text('Internet bilan muammo mavjud'),
+            ),
+          );
         }
 
         //Opens when data is loading

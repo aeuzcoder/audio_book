@@ -12,7 +12,7 @@ part 'user_state.dart';
 
 class UserBloc extends Bloc<UserEvent, UserState> {
   // Initialize the repository for fetching data
-  final BlocRepo blocRepo = BlocRepo();
+  final BlocRepo _blocRepo = BlocRepo();
 
   // BLoC constructor: Register event handlers for user authentication
   UserBloc() : super(UserStartState()) {
@@ -85,10 +85,11 @@ class UserBloc extends Bloc<UserEvent, UserState> {
   // Helper method to fetch book data from the repository
   Future<List<Book>> _fetchBooks() async {
     // Get a list of book IDs from the repository
-    List<String> booksId = await blocRepo.getBooksId;
+    List<String> booksId = await _blocRepo.getBooksId;
 
     // Fetch the data for each book using the list of IDs
-    List<Map<String, dynamic>> booksData = await blocRepo.getBooksData(booksId);
+    List<Map<String, dynamic>> booksData =
+        await _blocRepo.getBooksData(booksId);
 
     //changing url of all private url to public
     for (var book in booksData) {

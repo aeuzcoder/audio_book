@@ -22,7 +22,7 @@ class ChapterTileWidget extends StatelessWidget {
     } else if (index == endOfChapter - 1) {
       return 'Xulosa';
     } else {
-      return '$index - Mavzu     $title';
+      return '$index - Mavzu';
     }
   }
 

@@ -1,117 +1,59 @@
 import 'package:audio_app/core/theme/colors.dart';
 import 'package:audio_app/core/widgets/custom_app_bar.dart';
 import 'package:audio_app/data/models/book.dart';
+import 'package:audio_app/presentation/pages/online_page/data/cubit/audio_player_cubit.dart';
 import 'package:audio_app/presentation/pages/online_page/widgets/backgorund_widget.dart';
 import 'package:audio_app/presentation/pages/online_page/widgets/chapter_tile_widget.dart';
+import 'package:audio_app/presentation/pages/online_page/widgets/player_widget.dart';
 import 'package:flutter/material.dart';
-import 'package:just_audio/just_audio.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class PlayerPage extends StatefulWidget {
-  const PlayerPage({super.key, required this.books});
-  final List<Book> books;
+  const PlayerPage(
+      {super.key,
+      required this.book,
+      required this.bookIndex,
+      required this.checkingBook});
+  final Book book;
+  final int bookIndex;
+  final bool checkingBook;
 
   @override
   State<PlayerPage> createState() => _PlayerPageState();
 }
 
 class _PlayerPageState extends State<PlayerPage> {
-  bool loadFirstChapter = true;
-  bool chapterTapped = false;
-
-  final player = AudioPlayer();
-  bool isMounted = true; // Флаг для контроля состояния
-  Duration position = Duration.zero;
-  Duration duration = Duration.zero;
-
-  int chapterIndex = 0; // Индекс текущей главы
-  late Book book;
-  int? playingChapterIndex; // Индекс текущей проигрываемой главы
-
   @override
   void initState() {
-    super.initState();
-    book = widget.books.first;
-    isMounted = true; // Инициализация флага
-  }
-
-  @override
-  void dispose() {
-    isMounted = false;
-    player.dispose();
-    super.dispose();
-  }
-
-  void playMusic(String url, int index) async {
-    await player.setUrl(url);
-    player.play();
-    setState(() {
-      playingChapterIndex =
-          index; // Устанавливаем текущую главу как проигрываемую
-    });
-
-    player.positionStream.listen((p) {
-      if (isMounted) {
-        setState(() {
-          position = p;
-        });
-      }
-    });
-
-    player.durationStream.listen((d) {
-      if (d != null && isMounted) {
-        setState(() {
-          duration = d;
-        });
-      }
-    });
-
-    player.playerStateStream.listen((state) {
-      if (player.processingState == ProcessingState.completed) {
-        if (isMounted) {
-          setState(() {
-            position = Duration.zero;
-          });
-        }
-        player.pause();
-        player.seek(position);
-      }
-    });
-  }
-
-  String formatDuration(Duration d) {
-    final minutes = d.inMinutes.remainder(60);
-    final seconds = d.inSeconds.remainder(60);
-    return '${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}';
-  }
-
-  void handlePlayPause() {
-    if (player.playing) {
-      player.pause();
-      setState(() {
-        playingChapterIndex = null; // Сбрасываем проигрываемую главу
-      });
-    } else {
-      playMusic(book.chapters[chapterIndex], chapterIndex);
+    if (!widget.checkingBook) {
+      context.read<AudioPlayerCubit>().initializePlayer(
+          url: widget.book.chapters[0],
+          chapterIndex: 0,
+          bookIndex: widget.bookIndex,
+          nameOfChapter: 'Kirish');
     }
-  }
-
-  void handleSeek(double value) {
-    player.seek(Duration(seconds: value.toInt()));
+    context.read<AudioPlayerCubit>().checkingForFirstTime = false;
+    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
+    final bloc = context.read<AudioPlayerCubit>();
+
     final size = MediaQuery.of(context).size;
     return Scaffold(
-      appBar: const CustomAppBar(
-        title: 'Now playing',
-        colorTitle: Colors.white,
-        colorBg: Colors.transparent,
-        colorFg: fontColor,
-      ),
-      body: Stack(
-        children: [
+        appBar: const CustomAppBar(
+          title: 'Now playing',
+          colorTitle: Colors.white,
+          colorBg: Colors.transparent,
+          colorFg: fontColor,
+        ),
+        body: Stack(children: [
+          //BACKGROUND
           const BackgorundWidget(),
+
+          //FOREGROUND
+
           SizedBox(
             width: size.width,
             height: size.height,
@@ -122,12 +64,12 @@ class _PlayerPageState extends State<PlayerPage> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
+                    //IMAGE
                     Padding(
                       padding: const EdgeInsets.only(bottom: 16),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 200),
-                        width: chapterTapped ? 0 : size.height / 4.1,
-                        height: chapterTapped ? 0 : size.height / 3.2,
+                      child: Container(
+                        width: size.height / 4.1,
+                        height: size.height / 3.2,
                         decoration: BoxDecoration(
                           color: Colors.red,
                           borderRadius: BorderRadius.circular(12),
@@ -142,7 +84,7 @@ class _PlayerPageState extends State<PlayerPage> {
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(12),
                           child: Image.network(
-                            widget.books.first.image,
+                            widget.book.image,
                             fit: BoxFit.cover,
                             loadingBuilder: (BuildContext context, Widget child,
                                 ImageChunkEvent? loadingProgress) {
@@ -168,133 +110,58 @@ class _PlayerPageState extends State<PlayerPage> {
                         ),
                       ),
                     ),
+
+                    //TEXTS UNDER THE IMAGE
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          const Text(
-                            'Kirish',
-                            style: TextStyle(
-                              color: widgetColor,
-                              fontSize: 18,
-                            ),
-                          ),
                           Text(
-                            book.title,
+                            widget.book.title,
                             style: const TextStyle(
                                 fontSize: 22, fontWeight: FontWeight.w400),
                           ),
                           Text(
-                            book.author,
+                            widget.book.author,
                             style: const TextStyle(
                                 fontSize: 16, fontWeight: FontWeight.w500),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Text(formatDuration(position)),
-                                SliderTheme(
-                                  data: SliderTheme.of(context).copyWith(
-                                    trackHeight: 2.0,
-                                    thumbShape: const RoundSliderThumbShape(
-                                        enabledThumbRadius: 8.0),
-                                    overlayShape: const RoundSliderOverlayShape(
-                                        overlayRadius: 20.0),
-                                  ),
-                                  child: SizedBox(
-                                    width: size.width / 1.8,
-                                    child: Slider(
-                                      thumbColor: widgetColor,
-                                      activeColor: widgetColor,
-                                      min: 0.0,
-                                      max: duration.inSeconds.toDouble(),
-                                      value: position.inSeconds.toDouble(),
-                                      onChanged: handleSeek,
-                                    ),
-                                  ),
-                                ),
-                                Text(formatDuration(duration)),
-                              ],
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.symmetric(
-                                vertical: 20, horizontal: 32),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
-                              children: [
-                                IconButton(
-                                  onPressed: () {
-                                    if (chapterIndex > 0) {
-                                      chapterIndex = chapterIndex - 1;
-                                      playMusic(book.chapters[chapterIndex],
-                                          chapterIndex);
-                                    }
-                                  },
-                                  icon: Icon(
-                                    Icons.skip_previous_rounded,
-                                    size: 36,
-                                    color: fontColor.withOpacity(0.7),
-                                  ),
-                                ),
-                                GestureDetector(
-                                  onTap: handlePlayPause,
-                                  child: Container(
-                                    padding: const EdgeInsets.all(16),
-                                    decoration: const BoxDecoration(
-                                        color: widgetColor,
-                                        shape: BoxShape.circle),
-                                    child: Icon(
-                                      player.playing
-                                          ? Icons.pause
-                                          : Icons.play_arrow,
-                                      size: 32,
-                                    ),
-                                  ),
-                                ),
-                                IconButton(
-                                  onPressed: () {
-                                    if (chapterIndex <
-                                        book.chapters.length - 1) {
-                                      chapterIndex = chapterIndex + 1;
-                                      playMusic(book.chapters[chapterIndex],
-                                          chapterIndex);
-                                    }
-                                  },
-                                  icon: Icon(
-                                    Icons.skip_next_rounded,
-                                    size: 36,
-                                    color: fontColor.withOpacity(0.7),
-                                  ),
-                                ),
-                              ],
-                            ),
                           ),
                         ],
                       ),
                     ),
+                    const PlayerWidget(),
                     SizedBox(
                       width: size.width,
                       child: ListView.builder(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
-                        itemCount: book.chapters.length,
+                        itemCount: widget.book.chapters.length,
                         scrollDirection: Axis.vertical,
                         itemBuilder: (context, index) {
-                          final chapter = book.chapters[index];
+                          final chapter = widget.book.chapters[index];
                           return ChapterTileWidget(
                             indexChapter: index,
-                            title: book.title,
-                            endOfChapter: book.chapters.length,
-                            isPlaying: playingChapterIndex ==
-                                index, // Проверяем, проигрывается ли
+                            title: widget.book.title,
+                            endOfChapter: widget.book.chapters.length,
+                            isPlaying: false, // Проверяем, проигрывается ли
                             onTap: () {
-                              playMusic(chapter, index);
-                              chapterIndex = index;
+                              String nameOfChapter;
+                              if (index == 0) {
+                                nameOfChapter = 'Kirish';
+                              } else if (index ==
+                                  widget.book.chapters.length - 1) {
+                                nameOfChapter = 'Xulosa';
+                              } else {
+                                nameOfChapter = '$index - Mavzu';
+                              }
+
+                              bloc.initializePlayer(
+                                  url: chapter,
+                                  chapterIndex: index,
+                                  bookIndex: bloc.bookIndex,
+                                  nameOfChapter: nameOfChapter);
                             },
                           );
                         },
@@ -305,8 +172,6 @@ class _PlayerPageState extends State<PlayerPage> {
               ),
             ),
           )
-        ],
-      ),
-    );
+        ]));
   }
 }

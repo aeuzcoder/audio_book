@@ -1,11 +1,13 @@
 import 'package:audio_app/core/theme/colors.dart';
 import 'package:audio_app/core/widgets/custom_app_bar.dart';
 import 'package:audio_app/data/models/book.dart';
+import 'package:audio_app/presentation/pages/online_page/data/cubit/audio_player_cubit.dart';
 import 'package:audio_app/presentation/pages/online_page/ui/player_page.dart';
 import 'package:audio_app/presentation/pages/online_page/widgets/bottom_widget.dart';
 import 'package:audio_app/presentation/pages/online_page/widgets/center_widget.dart';
 import 'package:audio_app/presentation/pages/online_page/widgets/top_widget.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class OnlinePage extends StatefulWidget {
   const OnlinePage({super.key, required this.books});
@@ -27,13 +29,29 @@ class _OnlinePageState extends State<OnlinePage> {
         backgroundColor: widgetColor,
         foregroundColor: fontColor,
         onPressed: () {
-          Navigator.push(context, MaterialPageRoute(
-            builder: (context) {
-              return PlayerPage(
-                books: widget.books,
-              );
-            },
-          ));
+          if (context.read<AudioPlayerCubit>().checkingForFirstTime) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => PlayerPage(
+                  checkingBook: false,
+                  book: widget.books[0],
+                  bookIndex: index,
+                ),
+              ),
+            );
+          } else {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => PlayerPage(
+                  checkingBook: true,
+                  book: widget.books[index],
+                  bookIndex: index,
+                ),
+              ),
+            );
+          }
         },
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
         child: const Icon(

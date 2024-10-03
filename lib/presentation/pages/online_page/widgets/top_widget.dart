@@ -1,7 +1,9 @@
 import 'package:audio_app/core/theme/colors.dart';
 import 'package:audio_app/data/models/book.dart';
+import 'package:audio_app/presentation/pages/online_page/data/cubit/audio_player_cubit.dart';
 import 'package:audio_app/presentation/pages/online_page/ui/player_page.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 class TopWidget extends StatelessWidget {
   const TopWidget({super.key, required this.books});
@@ -47,11 +49,28 @@ class TopWidget extends StatelessWidget {
                 //CONTAINER IMAGE
                 return GestureDetector(
                   onTap: () {
-                    Navigator.push(
+                    if (context.read<AudioPlayerCubit>().checkingForFirstTime) {
+                      Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => PlayerPage(books: books),
-                        ));
+                          builder: (context) => PlayerPage(
+                            checkingBook: false,
+                            book: books[index],
+                            bookIndex: index,
+                          ),
+                        ),
+                      );
+                    } else {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => PlayerPage(
+                              checkingBook: true,
+                              book: books[index],
+                              bookIndex: index,
+                            ),
+                          ));
+                    }
                   },
                   child: Container(
                     height: 172,

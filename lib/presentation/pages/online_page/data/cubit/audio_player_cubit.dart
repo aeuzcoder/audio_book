@@ -10,24 +10,7 @@ class AudioPlayerCubit extends Cubit<AudioPlayerState> {
   bool isPlaying = false;
   int bookIndex = 0;
   String nameOfChapter = 'Kirish';
-  bool checkingForFirstTime = true;
-
-  Future<Duration?> lengthOfFirstAudio(String url) async {
-    final AudioPlayer playerForView = AudioPlayer();
-    try {
-      await playerForView.setUrl(url);
-      Duration? length = await playerForView.durationStream.firstWhere(
-        (duration) => duration != null,
-      );
-      return length;
-    } catch (e) {
-      // Обработка ошибок при загрузке
-      log('Error loading audio length: $e');
-      return null;
-    } finally {
-      await playerForView.dispose();
-    }
-  }
+  int chapterIndex = 0;
 
   // For loading audio
   void initializePlayer({
@@ -35,6 +18,7 @@ class AudioPlayerCubit extends Cubit<AudioPlayerState> {
     required int chapterIndex,
     required int bookIndex,
     required String nameOfChapter,
+    required String nameOfBook,
   }) async {
     this.bookIndex = bookIndex;
 
@@ -55,6 +39,7 @@ class AudioPlayerCubit extends Cubit<AudioPlayerState> {
           isPlaying: isPlaying,
           nameOfChapter: nameOfChapter,
           chapterIndex: chapterIndex,
+          nameOfBook: nameOfBook,
         ),
       );
 

@@ -30,9 +30,9 @@ class _PlayerPageState extends State<PlayerPage> {
           url: widget.book.chapters[0],
           chapterIndex: 0,
           bookIndex: widget.bookIndex,
-          nameOfChapter: 'Kirish');
+          nameOfChapter: 'Kirish',
+          nameOfBook: widget.book.title);
     }
-    context.read<AudioPlayerCubit>().checkingForFirstTime = false;
     super.initState();
   }
 
@@ -145,23 +145,26 @@ class _PlayerPageState extends State<PlayerPage> {
                             indexChapter: index,
                             title: widget.book.title,
                             endOfChapter: widget.book.chapters.length,
-                            isPlaying: false, // Проверяем, проигрывается ли
                             onTap: () {
                               String nameOfChapter;
                               if (index == 0) {
+                                nameOfChapter = 'Kitob haqida';
+                              } else if (index == 1) {
                                 nameOfChapter = 'Kirish';
                               } else if (index ==
                                   widget.book.chapters.length - 1) {
                                 nameOfChapter = 'Xulosa';
                               } else {
-                                nameOfChapter = '$index - Mavzu';
+                                nameOfChapter = '${index - 1} - Mavzu';
                               }
 
                               bloc.initializePlayer(
-                                  url: chapter,
-                                  chapterIndex: index,
-                                  bookIndex: bloc.bookIndex,
-                                  nameOfChapter: nameOfChapter);
+                                url: chapter,
+                                chapterIndex: index,
+                                bookIndex: bloc.bookIndex,
+                                nameOfChapter: nameOfChapter,
+                                nameOfBook: widget.book.title,
+                              );
                             },
                           );
                         },

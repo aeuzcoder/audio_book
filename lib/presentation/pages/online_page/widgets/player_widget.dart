@@ -100,8 +100,14 @@ class PlayerWidget extends StatelessWidget {
             ],
           );
         }
-        return const Center(
-          child: CircularProgressIndicator(),
+        return const SizedBox(
+          height: 50,
+          child: Center(
+            child: Text(
+              'LOADING...',
+              style: TextStyle(color: widgetColor),
+            ),
+          ),
         );
       },
     );

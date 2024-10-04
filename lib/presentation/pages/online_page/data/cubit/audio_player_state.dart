@@ -24,6 +24,7 @@ final class AudioPlayerLoadingState extends AudioPlayerState {
   final bool isPlaying;
   final int chapterIndex;
   final String nameOfChapter;
+  final String nameOfBook;
 
   AudioPlayerLoadingState({
     required this.nameOfChapter,
@@ -31,6 +32,7 @@ final class AudioPlayerLoadingState extends AudioPlayerState {
     required this.lengthOfAudio,
     required this.isPlaying,
     required this.chapterIndex,
+    required this.nameOfBook,
   });
 
   AudioPlayerLoadingState copyWith({
@@ -39,14 +41,15 @@ final class AudioPlayerLoadingState extends AudioPlayerState {
     bool? isPlaying,
     int? chapterIndex,
     String? nameOfChapter,
+    String? nameOfBook,
   }) {
     return AudioPlayerLoadingState(
-      position: position ?? this.position,
-      lengthOfAudio: lengthOfAudio ?? this.lengthOfAudio,
-      isPlaying: isPlaying ?? this.isPlaying,
-      chapterIndex: chapterIndex ?? this.chapterIndex,
-      nameOfChapter: nameOfChapter ?? this.nameOfChapter,
-    );
+        position: position ?? this.position,
+        lengthOfAudio: lengthOfAudio ?? this.lengthOfAudio,
+        isPlaying: isPlaying ?? this.isPlaying,
+        chapterIndex: chapterIndex ?? this.chapterIndex,
+        nameOfChapter: nameOfChapter ?? this.nameOfChapter,
+        nameOfBook: nameOfBook ?? this.nameOfBook);
   }
 
   String textOfPosition() {

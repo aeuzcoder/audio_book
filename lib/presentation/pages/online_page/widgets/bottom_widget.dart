@@ -1,6 +1,7 @@
 import 'package:audio_app/core/theme/colors.dart';
 import 'package:audio_app/data/models/book.dart';
 import 'package:audio_app/presentation/pages/online_page/data/cubit/audio_player_cubit.dart';
+import 'package:audio_app/presentation/pages/online_page/data/cubit/audio_player_state.dart';
 import 'package:audio_app/presentation/pages/online_page/ui/player_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -49,27 +50,31 @@ class BottomWidget extends StatelessWidget {
                 //CONTAINER IMAGE
                 return GestureDetector(
                   onTap: () {
-                    if (context.read<AudioPlayerCubit>().checkingForFirstTime) {
+                    final state = context.read<AudioPlayerCubit>().state;
+                    if (state is AudioPlayerLoadingState) {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
                           builder: (context) => PlayerPage(
-                            checkingBook: false,
+                            checkingBook: true,
                             book: books[index],
                             bookIndex: index,
                           ),
                         ),
                       );
-                    } else {
+                    }
+                    if (state is AudioPlayerInitial) {
                       Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) => PlayerPage(
-                              checkingBook: true,
+                              checkingBook: false,
                               book: books[index],
                               bookIndex: index,
                             ),
                           ));
+                    } else {
+                      const SizedBox();
                     }
                   },
                   child: Container(

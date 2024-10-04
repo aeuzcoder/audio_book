@@ -96,9 +96,6 @@ class UserBloc extends Bloc<UserEvent, UserState> {
       book['image'] = await getPublicUrl(book['image']);
       //log('IMAGE' '  ${book['image']}');
 
-      book['tutorial'] = await getPublicUrl(book['tutorial']);
-      //log('TUTORIAL' '  ${book['tutorial']}');
-
       List<dynamic> chapters = List<dynamic>.from(book['chapters']);
       book['chapters'] =
           await Future.wait(chapters.map((chapter) => getPublicUrl(chapter)));

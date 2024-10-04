@@ -1,13 +1,11 @@
 import 'package:audio_app/core/theme/colors.dart';
-import 'package:audio_app/core/widgets/custom_app_bar.dart';
 import 'package:audio_app/data/models/book.dart';
-import 'package:audio_app/presentation/pages/online_page/data/cubit/audio_player_cubit.dart';
-import 'package:audio_app/presentation/pages/online_page/ui/player_page.dart';
-import 'package:audio_app/presentation/pages/online_page/widgets/bottom_widget.dart';
-import 'package:audio_app/presentation/pages/online_page/widgets/center_widget.dart';
-import 'package:audio_app/presentation/pages/online_page/widgets/top_widget.dart';
+import 'package:audio_app/presentation/pages/online_page/pages/home_page.dart';
+import 'package:audio_app/presentation/pages/online_page/pages/liblary_page.dart';
+import 'package:audio_app/presentation/pages/online_page/pages/profile_page.dart';
+import 'package:audio_app/presentation/pages/online_page/pages/search_page.dart';
+import 'package:audio_app/presentation/pages/online_page/widgets/floating_action_widget.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
 class OnlinePage extends StatefulWidget {
   const OnlinePage({super.key, required this.books});
@@ -24,40 +22,14 @@ class _OnlinePageState extends State<OnlinePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       //FAB
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: widgetColor,
-        foregroundColor: fontColor,
-        onPressed: () {
-          if (context.read<AudioPlayerCubit>().checkingForFirstTime) {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => PlayerPage(
-                  checkingBook: false,
-                  book: widget.books[0],
-                  bookIndex: index,
-                ),
-              ),
-            );
-          } else {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => PlayerPage(
-                  checkingBook: true,
-                  book: widget.books[index],
-                  bookIndex: index,
-                ),
-              ),
-            );
-          }
-        },
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-        child: const Icon(
-          Icons.play_arrow,
-          size: 36,
-        ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
+      floatingActionButton: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 200),
+        child: index != 3
+            ? FloatingActionWidget(
+                book: widget.books.first,
+              )
+            : null,
       ),
 
       //BOTTOM NAV BAR
@@ -105,28 +77,14 @@ class _OnlinePageState extends State<OnlinePage> {
       ),
 
       //APP BAR
-      appBar: const CustomAppBar(
-        title: 'Explore',
-        colorTitle: widgetColor,
-        colorBg: Colors.transparent,
-        colorFg: fontColor,
-      ),
 
       //      BODY
-      body: Padding(
-        //ALL SCREEN PADDING
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        child: SingleChildScrollView(
-          child: Column(
-            //WIDGETS
-            children: [
-              TopWidget(books: widget.books),
-              CenterWidget(),
-              BottomWidget(books: widget.books),
-            ],
-          ),
-        ),
-      ),
+      body: <Widget>[
+        HomePage(books: widget.books),
+        const SearchPage(),
+        const LiblaryPage(),
+        const ProfilePage()
+      ][index],
     );
   }
 }

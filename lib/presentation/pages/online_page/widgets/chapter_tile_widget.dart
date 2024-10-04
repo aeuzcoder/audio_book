@@ -18,11 +18,13 @@ class ChapterTileWidget extends StatelessWidget {
 
   String textOfChapter(int index) {
     if (index == 0) {
+      return 'Kitob haqida';
+    } else if (index == 1) {
       return 'Kirish';
     } else if (index == endOfChapter - 1) {
       return 'Xulosa';
     } else {
-      return '$index - Mavzu';
+      return '${index - 1} - Mavzu';
     }
   }
 

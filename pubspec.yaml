@@ -28,6 +28,7 @@ environment:
 # the latest version available on pub.dev. To see which dependencies have newer
 # versions available, run `flutter pub outdated`.
 dependencies:
+  audio_service: ^0.18.15
   cloud_firestore: ^5.4.3
   connectivity_plus: ^6.0.5
   cupertino_icons: ^1.0.8
@@ -40,7 +41,6 @@ dependencies:
     sdk: flutter
   flutter_bloc: ^8.1.6
   just_audio: ^0.9.40
-  just_audio_background: ^0.0.1-beta.13
 
 dev_dependencies:
   flutter_lints: ^4.0.0

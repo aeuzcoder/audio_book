@@ -1,9 +1,9 @@
 import 'package:audio_app/core/theme/colors.dart';
 import 'package:audio_app/data/models/book.dart';
-import 'package:audio_app/presentation/pages/online_page/pages/home_page.dart';
-import 'package:audio_app/presentation/pages/online_page/pages/liblary_page.dart';
-import 'package:audio_app/presentation/pages/online_page/pages/profile_page.dart';
-import 'package:audio_app/presentation/pages/online_page/pages/search_page.dart';
+import 'package:audio_app/presentation/pages/online_page/pages/home_page/home_page.dart';
+import 'package:audio_app/presentation/pages/online_page/pages/library_page/library_page.dart';
+import 'package:audio_app/presentation/pages/online_page/pages/profile_page/profile_page.dart';
+import 'package:audio_app/presentation/pages/online_page/pages/search_page/search_page.dart';
 import 'package:audio_app/presentation/pages/online_page/widgets/floating_action_widget.dart';
 import 'package:flutter/material.dart';
 
@@ -81,7 +81,7 @@ class _OnlinePageState extends State<OnlinePage> {
       //      BODY
       body: <Widget>[
         HomePage(books: widget.books),
-        const SearchPage(),
+        SearchPage(books: widget.books),
         const LiblaryPage(),
         const ProfilePage()
       ][index],

@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 class ChapterTileWidget extends StatelessWidget {
   const ChapterTileWidget({
     super.key,
-    this.isPlaying = false,
+    required this.isPlaying,
     required this.indexChapter,
     required this.title,
     required this.onTap,
@@ -35,8 +35,9 @@ class ChapterTileWidget extends StatelessWidget {
         onTap();
       },
       child: Container(
-        decoration: const BoxDecoration(
-          border: Border(
+        decoration: BoxDecoration(
+          color: isPlaying ? Colors.grey.withOpacity(0.2) : null,
+          border: const Border(
             bottom: BorderSide(width: 0.2, color: fontColor),
           ),
         ),

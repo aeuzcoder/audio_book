@@ -2,6 +2,7 @@ import 'package:audio_app/core/theme/colors.dart';
 import 'package:audio_app/core/widgets/custom_app_bar.dart';
 import 'package:audio_app/data/models/book.dart';
 import 'package:audio_app/presentation/pages/online_page/data/cubit/audio_player_cubit.dart';
+import 'package:audio_app/presentation/pages/online_page/data/cubit/audio_player_state.dart';
 import 'package:audio_app/presentation/pages/online_page/widgets/backgorund_widget.dart';
 import 'package:audio_app/presentation/pages/online_page/widgets/chapter_tile_widget.dart';
 import 'package:audio_app/presentation/pages/online_page/widgets/player_widget.dart';
@@ -27,6 +28,7 @@ class _PlayerPageState extends State<PlayerPage> {
   void initState() {
     if (!widget.checkingBook) {
       context.read<AudioPlayerCubit>().initializePlayer(
+          isPlay: false,
           url: widget.book.chapters[0],
           chapterIndex: 0,
           bookIndex: widget.bookIndex,
@@ -112,63 +114,85 @@ class _PlayerPageState extends State<PlayerPage> {
                     ),
 
                     //TEXTS UNDER THE IMAGE
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Text(
-                            widget.book.title,
-                            style: const TextStyle(
-                                fontSize: 22, fontWeight: FontWeight.w400),
-                          ),
-                          Text(
-                            widget.book.author,
-                            style: const TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.w500),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const PlayerWidget(),
-                    SizedBox(
-                      width: size.width,
-                      child: ListView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount: widget.book.chapters.length,
-                        scrollDirection: Axis.vertical,
-                        itemBuilder: (context, index) {
-                          final chapter = widget.book.chapters[index];
-                          return ChapterTileWidget(
-                            indexChapter: index,
-                            title: widget.book.title,
-                            endOfChapter: widget.book.chapters.length,
-                            onTap: () {
-                              String nameOfChapter;
-                              if (index == 0) {
-                                nameOfChapter = 'Kitob haqida';
-                              } else if (index == 1) {
-                                nameOfChapter = 'Kirish';
-                              } else if (index ==
-                                  widget.book.chapters.length - 1) {
-                                nameOfChapter = 'Xulosa';
-                              } else {
-                                nameOfChapter = '${index - 1} - Mavzu';
-                              }
+                    BlocBuilder<AudioPlayerCubit, AudioPlayerState>(
+                      builder: (context, state) {
+                        if (state is AudioPlayerLoadingState) {
+                          return Column(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      widget.book.title,
+                                      style: const TextStyle(
+                                          fontSize: 22,
+                                          fontWeight: FontWeight.w400),
+                                    ),
+                                    Text(
+                                      widget.book.author,
+                                      style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w500),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              PlayerWidget(
+                                state: state,
+                                book: widget.book,
+                              ),
+                              SizedBox(
+                                width: size.width,
+                                child: ListView.builder(
+                                  shrinkWrap: true,
+                                  physics: const NeverScrollableScrollPhysics(),
+                                  itemCount: widget.book.chapters.length,
+                                  scrollDirection: Axis.vertical,
+                                  itemBuilder: (context, index) {
+                                    final chapter = widget.book.chapters[index];
+                                    return ChapterTileWidget(
+                                      isPlaying: state.isPlaying &&
+                                          index == state.chapterIndex,
+                                      indexChapter: index,
+                                      title: widget.book.title,
+                                      endOfChapter: widget.book.chapters.length,
+                                      onTap: () {
+                                        String nameOfChapter;
+                                        if (index == 0) {
+                                          nameOfChapter = 'Kitob haqida';
+                                        } else if (index == 1) {
+                                          nameOfChapter = 'Kirish';
+                                        } else if (index ==
+                                            widget.book.chapters.length - 1) {
+                                          nameOfChapter = 'Xulosa';
+                                        } else {
+                                          nameOfChapter =
+                                              '${index - 1} - Mavzu';
+                                        }
 
-                              bloc.initializePlayer(
-                                url: chapter,
-                                chapterIndex: index,
-                                bookIndex: bloc.bookIndex,
-                                nameOfChapter: nameOfChapter,
-                                nameOfBook: widget.book.title,
-                              );
-                            },
+                                        bloc.initializePlayer(
+                                          isPlay: true,
+                                          url: chapter,
+                                          chapterIndex: index,
+                                          bookIndex: bloc.bookIndex,
+                                          nameOfChapter: nameOfChapter,
+                                          nameOfBook: widget.book.title,
+                                        );
+                                      },
+                                    );
+                                  },
+                                ),
+                              ),
+                            ],
                           );
-                        },
-                      ),
+                        }
+                        return const Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      },
                     ),
                   ],
                 ),

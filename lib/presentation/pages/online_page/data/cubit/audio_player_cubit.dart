@@ -14,6 +14,7 @@ class AudioPlayerCubit extends Cubit<AudioPlayerState> {
 
   // For loading audio
   void initializePlayer({
+    bool isPlay = true,
     required String url,
     required int chapterIndex,
     required int bookIndex,
@@ -30,7 +31,6 @@ class AudioPlayerCubit extends Cubit<AudioPlayerState> {
     try {
       player = AudioPlayer();
       await player!.setUrl(url);
-      await player!.load();
 
       emit(
         AudioPlayerLoadingState(
@@ -42,6 +42,9 @@ class AudioPlayerCubit extends Cubit<AudioPlayerState> {
           nameOfBook: nameOfBook,
         ),
       );
+      if (isPlay) {
+        handlePlayPause();
+      } else {}
 
       _listenPosition();
     } catch (e) {
